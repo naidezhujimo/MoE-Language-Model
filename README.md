@@ -80,6 +80,11 @@ The training process will log the following metrics:
 
 After training, a plot of the training and validation loss will be saved as `loss_curve.png`.
 
+![Loss_curve](loss_curve.png)  
+
+Experts assign heat maps  
+![heatmap](expert_heatmap_6000.png)  
+
 ## Checkpoints
 
 Model checkpoints are saved to `model_checkpoint.pth` at regular intervals. You can load a checkpoint to resume training or generate text.
