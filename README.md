@@ -1,109 +1,95 @@
-# MoE-Language-Model
+# Sparse MoE Language Model
 
-这是一个基于 **稀疏混合专家（Sparse Mixture of Experts, MoE）** 和 **Transformer 架构** 的语言模型实现。该模型结合了多头注意力机制和 MoE 技术，能够高效地处理自然语言生成任务。代码使用 **PyTorch** 实现，并支持 **GPU 加速**。
+This repository contains an implementation of a Sparse Mixture of Experts (MoE) Language Model using PyTorch. The model is designed to handle large-scale text generation tasks efficiently by leveraging multiple expert networks and a routing mechanism to dynamically select the most relevant experts for each input.
 
-## 项目特点
+## Features
 
-1. **稀疏混合专家（Sparse MoE）架构**  
-   采用稀疏混合专家机制，通过 Top-k 路由策略动态选择专家，提升模型的计算效率和扩展性。同时，引入噪声路由和负载均衡损失，优化专家利用率。
+- **Sparse Mixture of Experts (MoE)**: Utilizes multiple expert networks with a routing mechanism to select the top-k experts for each input.
+- **Transformer Architecture**: Built on a multi-head self-attention mechanism with layer normalization and dropout for stable training.
+- **Noisy Top-k Routing**: Implements a noisy routing mechanism to improve the robustness of expert selection.
+- **Dynamic Load Balancing**: Includes an auxiliary loss to ensure balanced utilization of experts.
+- **Efficient Training**: Supports gradient clipping, learning rate scheduling, and checkpointing for stable and efficient training.
+- **Text Generation**: Capable of generating text using top-p sampling with temperature control.
 
-2. **Transformer 基础架构**  
-   基于标准的 Transformer 架构，支持多头自注意力机制和层归一化，确保模型能够捕捉长距离依赖关系。
+## Requirements
 
-3. **高效训练与优化**  
-   - 使用 AdamW 优化器和余弦退火学习率调度器，支持学习率预热和动态调整。
-   - 采用 Dropout、梯度裁剪等技术，提升模型的稳定性和泛化能力。
-   - 支持 Token Dropping，增强模型对噪声数据的鲁棒性。
+- Python 3.8+
+- PyTorch 1.10+
+- tiktoken
+- mlflow
+- tqdm
+- matplotlib
+- seaborn
 
-4. **灵活的文本生成能力**  
-   提供 Top-p 采样和温度参数控制，支持多样化的文本生成策略，能够生成高质量的自然语言文本。
+## Installation
 
-5. **详细的训练与评估流程**  
-   - 支持训练过程中的实时损失监控和专家利用率统计。
-   - 提供训练损失和验证损失的可视化曲线，以及专家选择热力图。
-   - 使用 MLflow 记录训练过程中的超参数和指标。
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/sparse-moe-language-model.git
+   cd sparse-moe-language-model
+   ```
 
-6. **易于扩展和复现**  
-   代码结构清晰，模块化设计，方便开发者进行扩展和实验。同时，提供完整的训练和推理流程，便于复现。
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## 模型架构
-### 嵌入层
-- 使用词嵌入和位置嵌入将输入序列映射到高维空间。
+## Usage
 
-### 多头注意力机制
-- 每个注意力头独立计算注意力权重，捕捉输入序列中的上下文信息。
+### Training
 
-### 稀疏混合专家（MoE）
-- 每个 MoE 层包含多个专家网络，通过动态路由机制选择最相关的专家。
+To train the model, run the following command:
 
-### 前馈神经网络
-- 每个专家网络是一个简单的两层全连接网络，用于处理输入特征。
-
-### 生成文本
-- 支持 Top-p 采样和温度调节，生成多样化的文本。
-
-## 使用方法
-### 1. 安装依赖
-确保已安装以下 Python 库：
-```bash
-pip install torch mlflow tiktoken tqdm matplotlib
-```
-
-### 2. 训练模型
-运行以下命令开始训练：
 ```bash
 python main.py --train
 ```
-训练过程中，模型会定期保存检查点，并记录训练和验证损失。训练完成后，会生成损失曲线图 `loss_curve.png`。
 
-### 3. 生成文本
-训练完成后，可以使用以下命令生成文本：
+This will start the training process with the default hyperparameters. The model will periodically evaluate on both the training and validation sets, and save checkpoints at regular intervals.
+
+### Text Generation
+
+To generate text using a trained model, run the following command:
+
 ```bash
 python main.py --generate
 ```
-生成的文本将保存到 `generated_text.txt` 文件中。
 
-### 4. 超参数配置
-可以在代码中调整以下超参数以优化模型性能：
-- `n_embd`：嵌入维度。
-- `n_head`：注意力头的数量。
-- `n_layer`：Transformer 层的数量。
-- `num_experts`：MoE 中专家的数量。
-- `top_k`：每个输入选择的专家数量。
-- `batch_size`：批量大小。
-- `learning_rate`：学习率。
-- `dropout`：Dropout 比例。
+This will load the latest checkpoint and generate a sample of text. The generated text will be saved to `generated_text.txt`.
 
-## 代码结构
-### 模型架构
-- `Head`：单头注意力机制。
-- `MultiHeadAttention`：多头注意力机制。
-- `Expert`：专家网络。
-- `NoisyTopkRouter`：带噪声的 Top-k 路由机制。
-- `SparseMoE`：稀疏混合专家模块。
-- `Block`：Transformer 块。
-- `SparseMoELanguageModel`：完整的语言模型。
+## Configuration
 
-### 训练与评估
-- `get_batch`：从数据集中随机采样一批数据。
-- `estimate_loss`：计算训练和验证损失。
-- `generate`：生成文本。
+The model's hyperparameters can be adjusted in the script. Key parameters include:
 
-### 工具函数
-- `decode`：将 token ID 解码为文本。
-- `kaiming_init_weights`：使用 Kaiming 初始化方法初始化模型权重。
+- `n_embd`: Embedding dimension.
+- `n_head`: Number of attention heads.
+- `n_layer`: Number of transformer layers.
+- `num_experts`: Number of experts in the MoE layer.
+- `top_k`: Number of experts to select for each input.
+- `batch_size`: Batch size for training.
+- `max_iters`: Maximum number of training iterations.
+- `learning_rate`: Initial learning rate.
 
-## 实验结果
-训练过程中，模型会记录训练和验证损失，并生成损失曲线图。以下是一个示例损失曲线：
+## Results
 
-![Loss Curve](loss_curve.png)
+The training process will log the following metrics:
 
----
+- **Training Loss**: The loss on the training set.
+- **Validation Loss**: The loss on the validation set.
+- **Expert Usage**: The percentage of experts being utilized.
+- **Gradient Norm**: The L2 norm of the gradients.
 
-### **注意事项**
-1. 确保安装的依赖版本与代码兼容。
-2. 如果使用 GPU 加速，请确保已正确配置 CUDA 环境。
-3. 在训练前，可以调整超参数以适应不同的数据集和任务。
+After training, a plot of the training and validation loss will be saved as `loss_curve.png`.
+
+## Checkpoints
+
+Model checkpoints are saved to `model_checkpoint.pth` at regular intervals. You can load a checkpoint to resume training or generate text.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
 
----
+## Acknowledgments
+
+- This implementation is inspired by the original Transformer paper ["Attention is All You Need"](https://arxiv.org/abs/1706.03762) and the Mixture of Experts approach.
+- Special thanks to the PyTorch community for their excellent documentation and tutorials.
